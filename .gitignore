@@ -19,3 +19,6 @@
 
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.ouvendor/
+
+# ignore .env file
+.env
