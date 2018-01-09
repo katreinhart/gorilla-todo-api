@@ -3,6 +3,8 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
+	"log"
 	"net/http"
 	"os"
 
@@ -10,6 +12,8 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
+
+	"github.com/joho/godotenv"
 )
 
 var db *gorm.DB
@@ -27,8 +31,19 @@ type transformedTodo struct {
 }
 
 func init() {
-	var err error
-	db, err = gorm.Open("postgres", "host=localhost user=gorm dbname=gorilla_todo_dev sslmode=disable password=gorm")
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
+	hostname := os.Getenv("HOST")
+	dbname := os.Getenv("DBNAME")
+	username := os.Getenv("USER")
+	password := os.Getenv("PASSWORD")
+
+	dbString := "host=" + hostname + " user=" + username + " dbname=" + dbname + " sslmode=disable password=" + password
+	fmt.Println(dbString)
+	db, err = gorm.Open("postgres", dbString)
 	if err != nil {
 		panic("Unable to connect to DB")
 	}
