@@ -4,13 +4,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"os"
 	"time"
 
 	jwt "github.com/dgrijalva/jwt-go"
 	"golang.org/x/crypto/bcrypt"
 )
-
-var secret = []byte("secret")
 
 // CreateUser handles registration of new user
 func CreateUser(b []byte) ([]byte, error) {
@@ -66,7 +65,7 @@ func LoginUser(b []byte) ([]byte, error) {
 	claim := jwt.StandardClaims{Id: string(dbUser.ID), ExpiresAt: exp}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claim)
-	t, err := token.SignedString(secret)
+	t, err := token.SignedString(os.Getenv("SECRET"))
 
 	var _user transformedUser
 	_user.Email = user.Email
