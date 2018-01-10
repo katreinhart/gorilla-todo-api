@@ -1,9 +1,6 @@
 package main
 
 import (
-	"bytes"
-	"encoding/json"
-	"fmt"
 	"net/http"
 	"os"
 	"time"
@@ -13,37 +10,37 @@ import (
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 
-	"github.com/joho/godotenv"
-
+	"github.com/katreinhart/gorilla-api/controller"
+	"github.com/katreinhart/gorilla-api/routing"
 	"golang.org/x/crypto/bcrypt"
 )
 
 var db *gorm.DB
 
 type (
-	todoModel struct {
-		gorm.Model
-		Title     string `json:"title"`
-		Completed bool   `json:"completed"`
-	}
+	// todoModel struct {
+	// 	gorm.Model
+	// 	Title     string `json:"title"`
+	// 	Completed bool   `json:"completed"`
+	// }
 
-	transformedTodo struct {
-		ID        uint   `json:"id"`
-		Title     string `json:"title"`
-		Completed bool   `json:"completed"`
-	}
+	// transformedTodo struct {
+	// 	ID        uint   `json:"id"`
+	// 	Title     string `json:"title"`
+	// 	Completed bool   `json:"completed"`
+	// }
 
-	userModel struct {
-		gorm.Model
-		Email    string `json:"email"`
-		Password string `json:"password"`
-	}
+	// userModel struct {
+	// 	gorm.Model
+	// 	Email    string `json:"email"`
+	// 	Password string `json:"password"`
+	// }
 
-	transformedUser struct {
-		ID    uint   `json:"id"`
-		Email string `json:"email"`
-		Token string `json:"token"`
-	}
+	// transformedUser struct {
+	// 	ID    uint   `json:"id"`
+	// 	Email string `json:"email"`
+	// 	Token string `json:"token"`
+	// }
 
 	token struct {
 		Sub uint      `json:"sub"`
@@ -51,25 +48,25 @@ type (
 	}
 )
 
-func init() {
-	_ = godotenv.Load()
+// func init() {
+// 	_ = godotenv.Load()
 
-	hostname := os.Getenv("HOST")
-	dbname := os.Getenv("DBNAME")
-	username := os.Getenv("USER")
-	password := os.Getenv("PASSWORD")
+// 	hostname := os.Getenv("HOST")
+// 	dbname := os.Getenv("DBNAME")
+// 	username := os.Getenv("USER")
+// 	password := os.Getenv("PASSWORD")
 
-	dbString := "host=" + hostname + " user=" + username + " dbname=" + dbname + " sslmode=disable password=" + password
+// 	dbString := "host=" + hostname + " user=" + username + " dbname=" + dbname + " sslmode=disable password=" + password
 
-	var err error
-	db, err = gorm.Open("postgres", dbString)
-	if err != nil {
-		panic("Unable to connect to DB")
-	}
+// 	var err error
+// 	db, err = gorm.Open("postgres", dbString)
+// 	if err != nil {
+// 		panic("Unable to connect to DB")
+// 	}
 
-	db.AutoMigrate(&todoModel{})
-	db.AutoMigrate(&userModel{})
-}
+// 	db.AutoMigrate(&todoModel{})
+// 	db.AutoMigrate(&userModel{})
+// }
 
 func main() {
 	var port string
@@ -82,16 +79,16 @@ func main() {
 
 	r := mux.NewRouter().StrictSlash(true)
 
-	r.HandleFunc("/", homeHandler)
-	r.HandleFunc("/todos", fetchAllTodos).Methods("GET")
-	r.HandleFunc("/todos", createTodo).Methods("POST")
-	r.HandleFunc("/todos/{id}", fetchSingleTodo).Methods("GET")
-	r.HandleFunc("/todos/{id}", updateTodo).Methods("PUT")
-	r.HandleFunc("/todos/{id}", deleteTodo).Methods("DELETE")
+	r.HandleFunc("/", routing.HomeHandler)
+	r.HandleFunc("/todos", controller.FetchAllTodos).Methods("GET")
+	r.HandleFunc("/todos", controller.CreateTodo).Methods("POST")
+	// r.HandleFunc("/todos/{id}", fetchSingleTodo).Methods("GET")
+	// r.HandleFunc("/todos/{id}", updateTodo).Methods("PUT")
+	// r.HandleFunc("/todos/{id}", deleteTodo).Methods("DELETE")
 
-	s := r.PathPrefix("/users").Subrouter()
+	// s := r.PathPrefix("/users").Subrouter()
 
-	s.HandleFunc("/register", createUser).Methods("POST")
+	// s.HandleFunc("/register", createUser).Methods("POST")
 	// s.HandleFunc("/login", loginUser).Methods("POST")
 
 	loggedRouter := handlers.LoggingHandler(os.Stdout, r)
@@ -99,168 +96,117 @@ func main() {
 	http.ListenAndServe(":"+port, handlers.RecoveryHandler()(loggedRouter))
 }
 
-func homeHandler(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("Hello world!"))
-}
+// func fetchSingleTodo(w http.ResponseWriter, r *http.Request) {
+// 	vars := mux.Vars(r)
+// 	id := vars["id"]
 
-func fetchAllTodos(w http.ResponseWriter, r *http.Request) {
-	var todos []todoModel
-	var _todos []transformedTodo
+// 	var todo todoModel
+// 	db.First(&todo, id)
 
-	db.Find(&todos)
+// 	if todo.ID == 0 {
+// 		w.WriteHeader(http.StatusNotFound)
+// 		w.Write([]byte("Todo not found"))
+// 		return
+// 	}
 
-	if len(todos) <= 0 {
-		w.WriteHeader(http.StatusNotFound)
-		w.Write([]byte("Todos not found"))
-		return
-	}
+// 	_todo := transformedTodo{ID: todo.ID, Title: todo.Title, Completed: todo.Completed}
 
-	for _, item := range todos {
-		_todos = append(_todos, transformedTodo{ID: item.ID, Completed: item.Completed, Title: item.Title})
-	}
+// 	js, err := json.Marshal(_todo)
+// 	if err != nil {
+// 		panic("Unable to convert todo to JSON format")
+// 	}
 
-	js, err := json.Marshal(_todos)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+// 	w.Header().Set("Content-Type", "application/json")
+// 	w.WriteHeader(http.StatusOK)
+// 	w.Write(js)
+// }
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	w.Write(js)
-}
+// func updateTodo(w http.ResponseWriter, r *http.Request) {
+// 	vars := mux.Vars(r)
+// 	id := vars["id"]
 
-func createTodo(w http.ResponseWriter, r *http.Request) {
-	buf := new(bytes.Buffer)
-	buf.ReadFrom(r.Body)
-	b := []byte(buf.String())
+// 	buf := new(bytes.Buffer)
+// 	buf.ReadFrom(r.Body)
+// 	b := []byte(buf.String())
 
-	var todo todoModel
+// 	var todo, updatedTodo todoModel
+// 	db.First(&todo, id)
 
-	err := json.Unmarshal(b, &todo)
+// 	if todo.ID == 0 {
+// 		w.WriteHeader(http.StatusNotFound)
+// 		w.Write([]byte("Todo not found"))
+// 		return
+// 	}
 
-	if err != nil {
-		panic("unable to marshal input into todoModel")
-	}
+// 	err := json.Unmarshal(b, &updatedTodo)
+// 	if err != nil {
+// 		panic("Unable to marshal todo into json")
+// 	}
 
-	db.Save(&todo)
+// 	db.Model(&todo).Update("title", updatedTodo.Title)
+// 	db.Model(&todo).Update("completed", updatedTodo.Completed)
 
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("Todo successfully created!"))
-}
+// 	js, err := json.Marshal(&todo)
+// 	if err != nil {
+// 		panic("Unable to marshal todo into json")
+// 	}
 
-func fetchSingleTodo(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	id := vars["id"]
+// 	w.Header().Set("Content-Type", "application/json")
+// 	w.WriteHeader(http.StatusOK)
+// 	w.Write(js)
+// }
 
-	var todo todoModel
-	db.First(&todo, id)
+// func deleteTodo(w http.ResponseWriter, r *http.Request) {
+// 	vars := mux.Vars(r)
+// 	id := vars["id"]
 
-	if todo.ID == 0 {
-		w.WriteHeader(http.StatusNotFound)
-		w.Write([]byte("Todo not found"))
-		return
-	}
+// 	var todo todoModel
+// 	db.First(&todo, id)
 
-	_todo := transformedTodo{ID: todo.ID, Title: todo.Title, Completed: todo.Completed}
+// 	if todo.ID == 0 {
+// 		w.WriteHeader(http.StatusNotFound)
+// 		w.Write([]byte("Todo not found"))
+// 		return
+// 	}
 
-	js, err := json.Marshal(_todo)
-	if err != nil {
-		panic("Unable to convert todo to JSON format")
-	}
+// 	db.Delete(&todo)
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	w.Write(js)
-}
+// 	js, err := json.Marshal(&todo)
+// 	if err != nil {
+// 		panic("Unable to marshal todo into json")
+// 	}
 
-func updateTodo(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	id := vars["id"]
+// 	w.Header().Set("Content-Type", "application/json")
+// 	w.WriteHeader(http.StatusOK)
+// 	w.Write(js)
+// }
 
-	buf := new(bytes.Buffer)
-	buf.ReadFrom(r.Body)
-	b := []byte(buf.String())
+// func createUser(w http.ResponseWriter, r *http.Request) {
 
-	var todo, updatedTodo todoModel
-	db.First(&todo, id)
+// 	buf := new(bytes.Buffer)
+// 	buf.ReadFrom(r.Body)
+// 	b := []byte(buf.String())
 
-	if todo.ID == 0 {
-		w.WriteHeader(http.StatusNotFound)
-		w.Write([]byte("Todo not found"))
-		return
-	}
+// 	var user userModel
 
-	err := json.Unmarshal(b, &updatedTodo)
-	if err != nil {
-		panic("Unable to marshal todo into json")
-	}
+// 	err := json.Unmarshal(b, &user)
 
-	db.Model(&todo).Update("title", updatedTodo.Title)
-	db.Model(&todo).Update("completed", updatedTodo.Completed)
+// 	if err != nil {
+// 		panic("unable to marshal input into todoModel")
+// 	}
 
-	js, err := json.Marshal(&todo)
-	if err != nil {
-		panic("Unable to marshal todo into json")
-	}
+// 	fmt.Println(user)
+// 	hash, err := hashPassword(user.Password)
+// 	if err != nil {
+// 		panic("unable to retrieve password")
+// 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	w.Write(js)
-}
+// 	user.Password = hash
+// 	db.Save(&user)
 
-func deleteTodo(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	id := vars["id"]
-
-	var todo todoModel
-	db.First(&todo, id)
-
-	if todo.ID == 0 {
-		w.WriteHeader(http.StatusNotFound)
-		w.Write([]byte("Todo not found"))
-		return
-	}
-
-	db.Delete(&todo)
-
-	js, err := json.Marshal(&todo)
-	if err != nil {
-		panic("Unable to marshal todo into json")
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	w.Write(js)
-}
-
-func createUser(w http.ResponseWriter, r *http.Request) {
-
-	buf := new(bytes.Buffer)
-	buf.ReadFrom(r.Body)
-	b := []byte(buf.String())
-
-	var user userModel
-
-	err := json.Unmarshal(b, &user)
-
-	if err != nil {
-		panic("unable to marshal input into todoModel")
-	}
-
-	fmt.Println(user)
-	hash, err := hashPassword(user.Password)
-	if err != nil {
-		panic("unable to retrieve password")
-	}
-
-	user.Password = hash
-	db.Save(&user)
-
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("User successfully created!"))
-}
+// 	w.WriteHeader(http.StatusOK)
+// 	w.Write([]byte("User successfully created!"))
+// }
 
 // func loginUser(w http.ResponseWriter, r *http.Request) {
 // 	buf := new(bytes.Buffer)
