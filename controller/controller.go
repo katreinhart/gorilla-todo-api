@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"net/http"
 
+	"github.com/gorilla/mux"
 	"github.com/katreinhart/gorilla-api/model"
 )
 
@@ -51,4 +52,20 @@ func CreateTodo(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("Todo successfully created!"))
+}
+
+// FetchSingleTodo takes URL param and passes to model,
+func FetchSingleTodo(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id := vars["id"]
+
+	js, err := model.FetchSingle(id)
+
+	if err != nil {
+		panic("Unable to convert todo to JSON format")
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(js)
 }

@@ -82,7 +82,7 @@ func main() {
 	r.HandleFunc("/", routing.HomeHandler)
 	r.HandleFunc("/todos", controller.FetchAllTodos).Methods("GET")
 	r.HandleFunc("/todos", controller.CreateTodo).Methods("POST")
-	// r.HandleFunc("/todos/{id}", fetchSingleTodo).Methods("GET")
+	r.HandleFunc("/todos/{id}", controller.FetchSingleTodo).Methods("GET")
 	// r.HandleFunc("/todos/{id}", updateTodo).Methods("PUT")
 	// r.HandleFunc("/todos/{id}", deleteTodo).Methods("DELETE")
 

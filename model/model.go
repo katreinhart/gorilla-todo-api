@@ -98,3 +98,24 @@ func Create(b []byte) ([]byte, error) {
 
 	return []byte("Todo successfully created"), nil
 }
+
+// FetchSingle gets a single todo based on param passed, returning []byte and error
+func FetchSingle(id string) ([]byte, error) {
+
+	var todo todoModel
+	db.First(&todo, id)
+
+	if todo.ID == 0 {
+		err := errors.New("Not found")
+		return []byte("Todo not found"), err
+	}
+
+	_todo := transformedTodo{ID: todo.ID, Title: todo.Title, Completed: todo.Completed}
+
+	js, err := json.Marshal(_todo)
+	if err != nil {
+		js = []byte("Unable to convert todo to JSON format")
+	}
+
+	return js, err
+}
