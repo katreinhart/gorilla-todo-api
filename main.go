@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"os"
 
@@ -41,7 +40,7 @@ func init() {
 	password := os.Getenv("PASSWORD")
 
 	dbString := "host=" + hostname + " user=" + username + " dbname=" + dbname + " sslmode=disable password=" + password
-	fmt.Println(dbString)
+	// fmt.Println(dbString)
 	db, err = gorm.Open("postgres", dbString)
 	if err != nil {
 		panic("Unable to connect to DB")
@@ -54,9 +53,9 @@ func main() {
 	environment := os.Getenv("ENVIRONMENT")
 	var port string
 	if environment == "development" {
-		port = ":3000"
+		port = "3000"
 	} else if environment == "production" {
-		port = ":8080"
+		port = os.Getenv("PORT")
 	}
 
 	r := mux.NewRouter().StrictSlash(true)
@@ -70,7 +69,7 @@ func main() {
 
 	loggedRouter := handlers.LoggingHandler(os.Stdout, r)
 
-	http.ListenAndServe(port, handlers.RecoveryHandler()(loggedRouter))
+	http.ListenAndServe(":"+port, handlers.RecoveryHandler()(loggedRouter))
 }
 
 func homeHandler(w http.ResponseWriter, r *http.Request) {
