@@ -61,6 +61,18 @@
 			"path": "github.com/lib/pq/oid",
 			"revision": "83612a56d3dd153a94a629cd64925371c9adad78",
 			"revisionTime": "2017-11-26T05:04:59Z"
+		},
+		{
+			"checksumSHA1": "oCH3J96RWvO8W4xjix47PModpio=",
+			"path": "golang.org/x/crypto/bcrypt",
+			"revision": "b3c9a1d25cfbbbab0ff4780b71c4f54e6e92a0de",
+			"revisionTime": "2018-01-09T18:05:24Z"
+		},
+		{
+			"checksumSHA1": "oVPHWesOmZ02vLq2fglGvf+AMgk=",
+			"path": "golang.org/x/crypto/blowfish",
+			"revision": "b3c9a1d25cfbbbab0ff4780b71c4f54e6e92a0de",
+			"revisionTime": "2018-01-09T18:05:24Z"
 		}
 	],
 	"rootPath": "github.com/katreinhart/gorilla-api"
