@@ -51,6 +51,14 @@ func init() {
 }
 
 func main() {
+	environment := os.Getenv("ENVIRONMENT")
+	var port string
+	if environment == "development" {
+		port = ":3000"
+	} else if environment == "production" {
+		port = ":8080"
+	}
+
 	r := mux.NewRouter().StrictSlash(true)
 
 	r.HandleFunc("/", homeHandler)
@@ -62,7 +70,7 @@ func main() {
 
 	loggedRouter := handlers.LoggingHandler(os.Stdout, r)
 
-	http.ListenAndServe(":3000", handlers.RecoveryHandler()(loggedRouter))
+	http.ListenAndServe(port, handlers.RecoveryHandler()(loggedRouter))
 }
 
 func homeHandler(w http.ResponseWriter, r *http.Request) {
