@@ -16,6 +16,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 
 	_, err := model.CreateUser(b)
 
+	w.Header().Set("Content-Type", "application/json")
 	if err != nil {
 		if err.Error() == "Unable to parse input" {
 			w.WriteHeader(http.StatusNotAcceptable)
@@ -41,8 +42,10 @@ func LoginUser(w http.ResponseWriter, r *http.Request) {
 	js, err := model.LoginUser(b)
 
 	if err != nil {
-		// handle error conditions
+		// handle errors
 	}
+
+	w.Header().Set("Content-Type", "application/json")
 
 	w.WriteHeader(http.StatusOK)
 	w.Write(js)

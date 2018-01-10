@@ -8,6 +8,7 @@ import (
 	"time"
 
 	jwt "github.com/dgrijalva/jwt-go"
+	"github.com/joho/godotenv"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -38,7 +39,8 @@ func CreateUser(b []byte) ([]byte, error) {
 // Successful login returns user with token; unsuccessful login returns an http status error with message.
 func LoginUser(b []byte) ([]byte, error) {
 	fmt.Println("Login User function in model")
-
+	// not sure if I need this but putting it here to see if it fixes env issue
+	_ = godotenv.Load()
 	// usermodel is a struct of email and password values
 	var user userModel
 
@@ -65,7 +67,15 @@ func LoginUser(b []byte) ([]byte, error) {
 	claim := jwt.StandardClaims{Id: string(dbUser.ID), ExpiresAt: exp}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claim)
-	t, err := token.SignedString(os.Getenv("SECRET"))
+	secret := []byte(os.Getenv("SECRET"))
+
+	t, err := token.SignedString(secret)
+
+	if err != nil {
+		return []byte("Something went wrong with JWT"), err
+	}
+
+	fmt.Println("token is", t)
 
 	var _user transformedUser
 	_user.Email = user.Email
@@ -75,7 +85,8 @@ func LoginUser(b []byte) ([]byte, error) {
 	js, err := json.Marshal(_user)
 
 	if err != nil {
-		// handle error
+		fmt.Println(err.Error())
+		return []byte("Error parsing user into JSON"), err
 	}
 
 	return js, nil
