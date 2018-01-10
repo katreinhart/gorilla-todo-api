@@ -119,3 +119,30 @@ func FetchSingle(id string) ([]byte, error) {
 
 	return js, err
 }
+
+// Update is the model function for PUT
+func Update(b []byte, id string) ([]byte, error) {
+
+	var todo, updatedTodo todoModel
+	db.First(&todo, id)
+
+	if todo.ID == 0 {
+		err := errors.New("Not found")
+		return []byte("Todo not found"), err
+	}
+
+	err := json.Unmarshal(b, &updatedTodo)
+	if err != nil {
+		return []byte("Malformed input"), err
+	}
+
+	db.Model(&todo).Update("title", updatedTodo.Title)
+	db.Model(&todo).Update("completed", updatedTodo.Completed)
+
+	js, err := json.Marshal(&todo)
+	if err != nil {
+		return []byte("Unable to marshal json"), err
+	}
+
+	return js, nil
+}

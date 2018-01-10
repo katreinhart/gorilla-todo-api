@@ -69,3 +69,33 @@ func FetchSingleTodo(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Write(js)
 }
+
+// UpdateTodo modifies the content of Todo based on url param and body content.
+func UpdateTodo(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id := vars["id"]
+
+	buf := new(bytes.Buffer)
+	buf.ReadFrom(r.Body)
+	b := []byte(buf.String())
+
+	js, err := model.Update(b, id)
+
+	w.Header().Set("Content-Type", "application/json")
+
+	if err != nil {
+		if err.Error() == "Not found" {
+			w.WriteHeader(http.StatusNotFound)
+			w.Write([]byte("Todo not found"))
+		} else if err.Error() == "Malformed input" {
+			w.WriteHeader(http.StatusNotAcceptable)
+			w.Write([]byte("Please check your inputs and try again."))
+		} else {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("Something went wrong."))
+		}
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Write(js)
+}

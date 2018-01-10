@@ -83,7 +83,7 @@ func main() {
 	r.HandleFunc("/todos", controller.FetchAllTodos).Methods("GET")
 	r.HandleFunc("/todos", controller.CreateTodo).Methods("POST")
 	r.HandleFunc("/todos/{id}", controller.FetchSingleTodo).Methods("GET")
-	// r.HandleFunc("/todos/{id}", updateTodo).Methods("PUT")
+	r.HandleFunc("/todos/{id}", controller.UpdateTodo).Methods("PUT")
 	// r.HandleFunc("/todos/{id}", deleteTodo).Methods("DELETE")
 
 	// s := r.PathPrefix("/users").Subrouter()
@@ -95,66 +95,6 @@ func main() {
 
 	http.ListenAndServe(":"+port, handlers.RecoveryHandler()(loggedRouter))
 }
-
-// func fetchSingleTodo(w http.ResponseWriter, r *http.Request) {
-// 	vars := mux.Vars(r)
-// 	id := vars["id"]
-
-// 	var todo todoModel
-// 	db.First(&todo, id)
-
-// 	if todo.ID == 0 {
-// 		w.WriteHeader(http.StatusNotFound)
-// 		w.Write([]byte("Todo not found"))
-// 		return
-// 	}
-
-// 	_todo := transformedTodo{ID: todo.ID, Title: todo.Title, Completed: todo.Completed}
-
-// 	js, err := json.Marshal(_todo)
-// 	if err != nil {
-// 		panic("Unable to convert todo to JSON format")
-// 	}
-
-// 	w.Header().Set("Content-Type", "application/json")
-// 	w.WriteHeader(http.StatusOK)
-// 	w.Write(js)
-// }
-
-// func updateTodo(w http.ResponseWriter, r *http.Request) {
-// 	vars := mux.Vars(r)
-// 	id := vars["id"]
-
-// 	buf := new(bytes.Buffer)
-// 	buf.ReadFrom(r.Body)
-// 	b := []byte(buf.String())
-
-// 	var todo, updatedTodo todoModel
-// 	db.First(&todo, id)
-
-// 	if todo.ID == 0 {
-// 		w.WriteHeader(http.StatusNotFound)
-// 		w.Write([]byte("Todo not found"))
-// 		return
-// 	}
-
-// 	err := json.Unmarshal(b, &updatedTodo)
-// 	if err != nil {
-// 		panic("Unable to marshal todo into json")
-// 	}
-
-// 	db.Model(&todo).Update("title", updatedTodo.Title)
-// 	db.Model(&todo).Update("completed", updatedTodo.Completed)
-
-// 	js, err := json.Marshal(&todo)
-// 	if err != nil {
-// 		panic("Unable to marshal todo into json")
-// 	}
-
-// 	w.Header().Set("Content-Type", "application/json")
-// 	w.WriteHeader(http.StatusOK)
-// 	w.Write(js)
-// }
 
 // func deleteTodo(w http.ResponseWriter, r *http.Request) {
 // 	vars := mux.Vars(r)
