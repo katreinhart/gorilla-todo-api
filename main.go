@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 
@@ -32,9 +31,9 @@ type transformedTodo struct {
 
 func init() {
 	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
+	// if err != nil {
+	// 	log.Fatal("Error loading .env file")
+	// }
 
 	hostname := os.Getenv("HOST")
 	dbname := os.Getenv("DBNAME")
