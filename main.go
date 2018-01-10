@@ -50,12 +50,12 @@ func init() {
 }
 
 func main() {
-	environment := os.Getenv("ENVIRONMENT")
 	var port string
-	if environment == "development" {
-		port = "3000"
-	} else if environment == "production" {
+
+	if os.Getenv("PORT") != "" {
 		port = os.Getenv("PORT")
+	} else {
+		port = "8080"
 	}
 
 	r := mux.NewRouter().StrictSlash(true)
