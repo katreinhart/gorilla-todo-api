@@ -84,7 +84,7 @@ func main() {
 	r.HandleFunc("/todos", controller.CreateTodo).Methods("POST")
 	r.HandleFunc("/todos/{id}", controller.FetchSingleTodo).Methods("GET")
 	r.HandleFunc("/todos/{id}", controller.UpdateTodo).Methods("PUT")
-	// r.HandleFunc("/todos/{id}", deleteTodo).Methods("DELETE")
+	r.HandleFunc("/todos/{id}", controller.DeleteTodo).Methods("DELETE")
 
 	// s := r.PathPrefix("/users").Subrouter()
 
@@ -95,31 +95,6 @@ func main() {
 
 	http.ListenAndServe(":"+port, handlers.RecoveryHandler()(loggedRouter))
 }
-
-// func deleteTodo(w http.ResponseWriter, r *http.Request) {
-// 	vars := mux.Vars(r)
-// 	id := vars["id"]
-
-// 	var todo todoModel
-// 	db.First(&todo, id)
-
-// 	if todo.ID == 0 {
-// 		w.WriteHeader(http.StatusNotFound)
-// 		w.Write([]byte("Todo not found"))
-// 		return
-// 	}
-
-// 	db.Delete(&todo)
-
-// 	js, err := json.Marshal(&todo)
-// 	if err != nil {
-// 		panic("Unable to marshal todo into json")
-// 	}
-
-// 	w.Header().Set("Content-Type", "application/json")
-// 	w.WriteHeader(http.StatusOK)
-// 	w.Write(js)
-// }
 
 // func createUser(w http.ResponseWriter, r *http.Request) {
 

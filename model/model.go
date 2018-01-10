@@ -146,3 +146,25 @@ func Update(b []byte, id string) ([]byte, error) {
 
 	return js, nil
 }
+
+// Delete deletes the todo from the database
+func Delete(id string) ([]byte, error) {
+
+	var todo todoModel
+	db.First(&todo, id)
+
+	if todo.ID == 0 {
+		// w.WriteHeader(http.StatusNotFound)
+		// w.Write([]byte("Todo not found"))
+		// return
+	}
+
+	db.Delete(&todo)
+
+	js, err := json.Marshal(&todo)
+	if err != nil {
+		panic("Unable to marshal todo into json")
+	}
+
+	return js, nil
+}

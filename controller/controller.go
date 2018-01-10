@@ -99,3 +99,26 @@ func UpdateTodo(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Write(js)
 }
+
+// DeleteTodo deletes a todo
+func DeleteTodo(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id := vars["id"]
+
+	js, err := model.Delete(id)
+
+	w.Header().Set("Content-Type", "application/json")
+
+	if err != nil {
+		if err.Error() == "Not found" {
+			w.WriteHeader(http.StatusNotFound)
+			w.Write([]byte("Todo not found"))
+		} else if err.Error() == "Unable to marshal todo into json" {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("Something went wrong."))
+		}
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Write(js)
+}
