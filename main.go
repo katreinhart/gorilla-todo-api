@@ -3,70 +3,14 @@ package main
 import (
 	"net/http"
 	"os"
-	"time"
 
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
-	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 
 	"github.com/katreinhart/gorilla-api/controller"
 	"github.com/katreinhart/gorilla-api/routing"
-	"golang.org/x/crypto/bcrypt"
 )
-
-var db *gorm.DB
-
-type (
-	// todoModel struct {
-	// 	gorm.Model
-	// 	Title     string `json:"title"`
-	// 	Completed bool   `json:"completed"`
-	// }
-
-	// transformedTodo struct {
-	// 	ID        uint   `json:"id"`
-	// 	Title     string `json:"title"`
-	// 	Completed bool   `json:"completed"`
-	// }
-
-	// userModel struct {
-	// 	gorm.Model
-	// 	Email    string `json:"email"`
-	// 	Password string `json:"password"`
-	// }
-
-	// transformedUser struct {
-	// 	ID    uint   `json:"id"`
-	// 	Email string `json:"email"`
-	// 	Token string `json:"token"`
-	// }
-
-	token struct {
-		Sub uint      `json:"sub"`
-		Exp time.Time `json:"exp"`
-	}
-)
-
-// func init() {
-// 	_ = godotenv.Load()
-
-// 	hostname := os.Getenv("HOST")
-// 	dbname := os.Getenv("DBNAME")
-// 	username := os.Getenv("USER")
-// 	password := os.Getenv("PASSWORD")
-
-// 	dbString := "host=" + hostname + " user=" + username + " dbname=" + dbname + " sslmode=disable password=" + password
-
-// 	var err error
-// 	db, err = gorm.Open("postgres", dbString)
-// 	if err != nil {
-// 		panic("Unable to connect to DB")
-// 	}
-
-// 	db.AutoMigrate(&todoModel{})
-// 	db.AutoMigrate(&userModel{})
-// }
 
 func main() {
 	var port string
@@ -86,87 +30,12 @@ func main() {
 	r.HandleFunc("/todos/{id}", controller.UpdateTodo).Methods("PUT")
 	r.HandleFunc("/todos/{id}", controller.DeleteTodo).Methods("DELETE")
 
-	// s := r.PathPrefix("/users").Subrouter()
+	s := r.PathPrefix("/users").Subrouter()
 
-	// s.HandleFunc("/register", createUser).Methods("POST")
-	// s.HandleFunc("/login", loginUser).Methods("POST")
+	s.HandleFunc("/register", controller.CreateUser).Methods("POST")
+	// s.HandleFunc("/login", auth.LoginUser).Methods("POST")
 
 	loggedRouter := handlers.LoggingHandler(os.Stdout, r)
 
 	http.ListenAndServe(":"+port, handlers.RecoveryHandler()(loggedRouter))
-}
-
-// func createUser(w http.ResponseWriter, r *http.Request) {
-
-// 	buf := new(bytes.Buffer)
-// 	buf.ReadFrom(r.Body)
-// 	b := []byte(buf.String())
-
-// 	var user userModel
-
-// 	err := json.Unmarshal(b, &user)
-
-// 	if err != nil {
-// 		panic("unable to marshal input into todoModel")
-// 	}
-
-// 	fmt.Println(user)
-// 	hash, err := hashPassword(user.Password)
-// 	if err != nil {
-// 		panic("unable to retrieve password")
-// 	}
-
-// 	user.Password = hash
-// 	db.Save(&user)
-
-// 	w.WriteHeader(http.StatusOK)
-// 	w.Write([]byte("User successfully created!"))
-// }
-
-// func loginUser(w http.ResponseWriter, r *http.Request) {
-// 	buf := new(bytes.Buffer)
-// 	buf.ReadFrom(r.Body)
-// 	b := []byte(buf.String())
-
-// 	var user userModel
-
-// 	err := json.Unmarshal(b, &user)
-
-// 	if err != nil {
-// 		panic("unable to marshal input into todoModel")
-// 	}
-
-// 	id := user.ID
-
-// 	var dbUser userModel
-// 	db.First(&dbUser, id)
-// 	if dbUser.ID == 0 {
-// 		panic("Unable to find user in db")
-// 	}
-
-// 	match := checkPasswordHash(user.Password, dbUser.Password)
-// 	if !match {
-// 		panic("Passwords do not match")
-// 	}
-
-// 	claims := token{Sub: user.ID, Exp: time.Now().Add(time.Hour * 24)}
-// 	token, err := jwt.ParseWithClaims()
-
-// 	var _user transformedUser
-// 	_user.Email = user.Email
-// 	_user.ID = user.ID
-//  //	_user.Token =
-// }
-
-// user login password helper functions
-// from https://gowebexamples.com/password-hashing/
-
-func hashPassword(password string) (string, error) {
-	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
-	return string(bytes), err
-}
-
-func checkPasswordHash(password, hash string) bool {
-	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
-	return err == nil
 }
