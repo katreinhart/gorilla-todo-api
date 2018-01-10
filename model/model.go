@@ -2,6 +2,7 @@ package model
 
 import (
 	"os"
+	"time"
 
 	"github.com/jinzhu/gorm"
 	"github.com/joho/godotenv"
@@ -32,6 +33,12 @@ type (
 		ID    uint   `json:"id"`
 		Email string `json:"email"`
 		Token string `json:"token"`
+	}
+
+	// claims is for JWT authentication
+	claims struct {
+		ID  uint      `json:"id"`
+		Exp time.Time `json:"exp"`
 	}
 )
 

@@ -21,13 +21,29 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusNotAcceptable)
 			w.Write([]byte("Please check your inputs and try again."))
 			return
-		} else {
-			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte("Something went wrong."))
-			return
 		}
+
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("Something went wrong."))
+		return
 	}
 
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("User successfully created!"))
+}
+
+// LoginUser function handles request/response of login function
+func LoginUser(w http.ResponseWriter, r *http.Request) {
+	buf := new(bytes.Buffer)
+	buf.ReadFrom(r.Body)
+	b := []byte(buf.String())
+
+	js, err := model.LoginUser(b)
+
+	if err != nil {
+		// handle error conditions
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Write(js)
 }

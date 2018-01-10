@@ -4,9 +4,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"time"
 
+	jwt "github.com/dgrijalva/jwt-go"
 	"golang.org/x/crypto/bcrypt"
 )
+
+var secret = []byte("secret")
 
 // CreateUser handles registration of new user
 func CreateUser(b []byte) ([]byte, error) {
@@ -29,6 +33,53 @@ func CreateUser(b []byte) ([]byte, error) {
 	db.Save(&user)
 
 	return []byte("User created successfully"), nil
+}
+
+// LoginUser function takes in request body of login post and checks it against database.
+// Successful login returns user with token; unsuccessful login returns an http status error with message.
+func LoginUser(b []byte) ([]byte, error) {
+	fmt.Println("Login User function in model")
+
+	// usermodel is a struct of email and password values
+	var user userModel
+
+	err := json.Unmarshal(b, &user)
+
+	if err != nil {
+		panic("unable to marshal input into todoModel")
+	}
+
+	userEmail := user.Email
+
+	var dbUser userModel
+	db.First(&dbUser, "email = ?", userEmail)
+	if dbUser.ID == 0 {
+		panic("Unable to find user in db")
+	}
+
+	match := checkPasswordHash(user.Password, dbUser.Password)
+	if !match {
+		panic("Passwords do not match")
+	}
+	exp := time.Now().Add(time.Hour * 24).Unix()
+
+	claim := jwt.StandardClaims{Id: string(dbUser.ID), ExpiresAt: exp}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claim)
+	t, err := token.SignedString(secret)
+
+	var _user transformedUser
+	_user.Email = user.Email
+	_user.ID = user.ID
+	_user.Token = t
+
+	js, err := json.Marshal(_user)
+
+	if err != nil {
+		// handle error
+	}
+
+	return js, nil
 }
 
 // user login password helper functions

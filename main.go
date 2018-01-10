@@ -33,7 +33,7 @@ func main() {
 	s := r.PathPrefix("/users").Subrouter()
 
 	s.HandleFunc("/register", controller.CreateUser).Methods("POST")
-	// s.HandleFunc("/login", auth.LoginUser).Methods("POST")
+	s.HandleFunc("/login", controller.LoginUser).Methods("POST")
 
 	loggedRouter := handlers.LoggingHandler(os.Stdout, r)
 
