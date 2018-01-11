@@ -2,7 +2,6 @@ package model
 
 import (
 	"os"
-	"time"
 
 	"github.com/jinzhu/gorm"
 	"github.com/joho/godotenv"
@@ -36,10 +35,10 @@ type (
 	}
 
 	// claims is for JWT authentication
-	claims struct {
-		ID  uint      `json:"id"`
-		Exp time.Time `json:"exp"`
-	}
+	// claims struct {
+	// 	ID  uint      `json:"id"`
+	// 	Exp time.Time `json:"exp"`
+	// }
 )
 
 func init() {

@@ -8,70 +8,80 @@ import (
 	"time"
 
 	jwt "github.com/dgrijalva/jwt-go"
-	"github.com/joho/godotenv"
 	"golang.org/x/crypto/bcrypt"
 )
 
 // CreateUser handles registration of new user
 func CreateUser(b []byte) ([]byte, error) {
 
-	var user userModel
+	var user, dbUser userModel
 
 	err := json.Unmarshal(b, &user)
 
 	if err != nil {
-		return []byte("Unable to parse input"), errors.New("Unable to parse input")
+		return []byte(""), errors.New("Unable to parse input")
+	}
+	email := user.Email
+	db.First(&dbUser, "email = ?", email)
+	if dbUser.ID != 0 {
+		return []byte(""), errors.New("User exists")
 	}
 
-	fmt.Println(user)
 	hash, err := hashPassword(user.Password)
 	if err != nil {
-		return []byte("Something went wrong"), errors.New("Something went wrong")
+		return []byte(""), errors.New("Something went wrong")
 	}
 
 	user.Password = hash
+
 	db.Save(&user)
 
-	return []byte("User created successfully"), nil
+	if err != nil {
+		return []byte(""), errors.New("User exists")
+	}
+
+	js, err := json.Marshal(user)
+
+	return js, nil
 }
 
 // LoginUser function takes in request body of login post and checks it against database.
 // Successful login returns user with token; unsuccessful login returns an http status error with message.
 func LoginUser(b []byte) ([]byte, error) {
-	fmt.Println("Login User function in model")
-	// not sure if I need this but putting it here to see if it fixes env issue
-	_ = godotenv.Load()
+
 	// usermodel is a struct of email and password values
 	var user userModel
 
 	err := json.Unmarshal(b, &user)
 
 	if err != nil {
-		panic("unable to marshal input into todoModel")
+		return []byte(""), errors.New("unable to unmarshal input into todoModel")
 	}
 
 	userEmail := user.Email
 
 	var dbUser userModel
+
 	db.First(&dbUser, "email = ?", userEmail)
 	if dbUser.ID == 0 {
-		panic("Unable to find user in db")
+		return []byte(""), errors.New("user with that email already exists in database")
 	}
 
 	match := checkPasswordHash(user.Password, dbUser.Password)
 	if !match {
-		panic("Passwords do not match")
+		return []byte(""), errors.New("passwords do not match")
 	}
+
+	// jwt stuff
 	exp := time.Now().Add(time.Hour * 24).Unix()
-
 	claim := jwt.StandardClaims{Id: string(dbUser.ID), ExpiresAt: exp}
-
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claim)
 	secret := []byte(os.Getenv("SECRET"))
 
 	t, err := token.SignedString(secret)
 
 	if err != nil {
+		fmt.Println(err.Error())
 		return []byte("Something went wrong with JWT"), err
 	}
 
