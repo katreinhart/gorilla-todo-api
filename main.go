@@ -35,7 +35,10 @@ func main() {
 	api.HandleFunc("/todos/{id}", controller.UpdateTodo).Methods("PUT")
 	api.HandleFunc("/todos/{id}", controller.DeleteTodo).Methods("DELETE")
 
-	s := r.PathPrefix("/users").Subrouter()
+	u := r.PathPrefix("/users").Subrouter()
+	u.HandleFunc("/", controller.FetchAllUsers).Methods("GET")
+
+	s := r.PathPrefix("/auth").Subrouter()
 
 	s.HandleFunc("/register", controller.CreateUser).Methods("POST")
 	s.HandleFunc("/login", controller.LoginUser).Methods("POST")
@@ -52,6 +55,11 @@ func main() {
 	muxRouter.Handle("/api/", negroni.New(
 		negroni.HandlerFunc(jwtMiddleware.HandlerWithNext),
 		negroni.Wrap(api),
+	))
+
+	muxRouter.Handle("/users/", negroni.New(
+		negroni.HandlerFunc(jwtMiddleware.HandlerWithNext),
+		negroni.Wrap(u),
 	))
 
 	n := negroni.Classic()

@@ -113,3 +113,28 @@ func checkPasswordHash(password, hash string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
 	return err == nil
 }
+
+// FetchAllUsers asdfasdfasdf
+func FetchAllUsers() ([]byte, error) {
+	var users []userModel
+	var _users []listedUser
+
+	db.Find(&users)
+
+	if len(users) <= 0 {
+		err := errors.New("Not found")
+		{
+			return []byte("Users not found"), err
+		}
+	}
+
+	for _, item := range users {
+		_users = append(_users, listedUser{ID: item.ID, Email: item.Email, Admin: false})
+	}
+
+	js, err := json.Marshal(_users)
+
+	{
+		return js, err
+	}
+}

@@ -49,10 +49,30 @@ func LoginUser(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		if err.Error() == "Something went wrong with JWT" {
 			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte("Something went wrong"))
+			w.Write([]byte("{\"message\": \"something went wrong\"}"))
 		} else if err.Error() == "Passwords do not match" {
 			w.WriteHeader(http.StatusForbidden)
-			w.Write([]byte("Not allowed"))
+			w.Write([]byte("{\"message\": \"Not allowed\"}"))
+		} else {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("{\"message\": \"something went wrong\"}"))
+		}
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Write(js)
+}
+
+// FetchAllUsers does what it says on the tin
+func FetchAllUsers(w http.ResponseWriter, r *http.Request) {
+	js, err := model.FetchAllUsers()
+
+	w.Header().Set("Content-Type", "application/json")
+
+	if err != nil {
+		if err.Error() == "Not found" {
+			w.WriteHeader(http.StatusNotFound)
+			w.Write(js)
 		} else {
 			w.WriteHeader(http.StatusInternalServerError)
 			w.Write([]byte("Something went wrong"))

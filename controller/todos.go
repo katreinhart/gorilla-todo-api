@@ -10,6 +10,7 @@ import (
 
 // FetchAllTodos fetches from model and returns json
 func FetchAllTodos(w http.ResponseWriter, r *http.Request) {
+
 	js, err := model.FetchAll()
 
 	w.Header().Set("Content-Type", "application/json")

@@ -35,6 +35,12 @@ type (
 		Token string `json:"token"`
 	}
 
+	listedUser struct {
+		ID    uint   `json:"id"`
+		Email string `json:"email"`
+		Admin bool   `json:"admin"`
+	}
+
 	// claims is for JWT authentication
 	// claims struct {
 	// 	ID  uint      `json:"id"`
