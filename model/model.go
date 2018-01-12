@@ -1,6 +1,7 @@
 package model
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/jinzhu/gorm"
@@ -50,7 +51,7 @@ func init() {
 	password := os.Getenv("PASSWORD")
 
 	dbString := "host=" + hostname + " user=" + username + " dbname=" + dbname + " sslmode=disable password=" + password
-
+	fmt.Println(dbString)
 	var err error
 	db, err = gorm.Open("postgres", dbString)
 	if err != nil {
