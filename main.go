@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"os"
 
-	jwtmiddleware "github.com/auth0/go-jwt-middleware"
+	jwtmiddleware "github.com/aiden0z/go-jwt-middleware"
 	"github.com/codegangsta/negroni"
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/handlers"
@@ -48,6 +48,8 @@ func main() {
 			return []byte(os.Getenv("SECRET")), nil
 		},
 		SigningMethod: jwt.SigningMethodHS256,
+		Debug:         true,
+		UserProperty:  "user",
 	})
 
 	muxRouter := http.NewServeMux()

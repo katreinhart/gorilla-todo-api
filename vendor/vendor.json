@@ -3,6 +3,12 @@
 	"ignore": "test",
 	"package": [
 		{
+			"checksumSHA1": "JzQnqFqXRTzZhjMyGxPDWK/RqEo=",
+			"path": "github.com/aiden0z/go-jwt-middleware",
+			"revision": "14a0de5f054df8738f9354a29b542d96dfacdc88",
+			"revisionTime": "2016-09-13T02:38:35Z"
+		},
+		{
 			"checksumSHA1": "n2KWrxS+GQrPiFI/RQfKSj1nZTs=",
 			"path": "github.com/auth0/go-jwt-middleware",
 			"revision": "5493cabe49f7bfa6e2ec444a09d334d90cd4e2bd",
@@ -91,6 +97,12 @@
 			"path": "golang.org/x/crypto/blowfish",
 			"revision": "b3c9a1d25cfbbbab0ff4780b71c4f54e6e92a0de",
 			"revisionTime": "2018-01-09T18:05:24Z"
+		},
+		{
+			"checksumSHA1": "GtamqiJoL7PGHsN454AoffBFMa8=",
+			"path": "golang.org/x/net/context",
+			"revision": "d866cfc389cec985d6fda2859936a575a55a3ab6",
+			"revisionTime": "2017-12-11T20:45:21Z"
 		}
 	],
 	"rootPath": "github.com/katreinhart/gorilla-api"

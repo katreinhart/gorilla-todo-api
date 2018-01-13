@@ -2,9 +2,12 @@ package controller
 
 import (
 	"bytes"
+	"fmt"
 	"net/http"
 
+	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/katreinhart/gorilla-api/model"
+	"golang.org/x/net/context"
 )
 
 // CreateUser handles registration of new user
@@ -39,6 +42,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 
 // LoginUser function handles request/response of login function
 func LoginUser(w http.ResponseWriter, r *http.Request) {
+
 	buf := new(bytes.Buffer)
 	buf.ReadFrom(r.Body)
 	b := []byte(buf.String())
@@ -65,6 +69,15 @@ func LoginUser(w http.ResponseWriter, r *http.Request) {
 
 // FetchAllUsers does what it says on the tin
 func FetchAllUsers(w http.ResponseWriter, r *http.Request) {
+
+	// testing context setting from jwt middleware
+	user := context.Get(r, "user")
+	fmt.Fprintf(w, "This is an authenticated request\n")
+	fmt.Fprintf(w, "Claim content:\n")
+	for k, v := range user.(*jwt.Token).Claims.(jwt.MapClaims) {
+		fmt.Println(k, v)
+	}
+
 	js, err := model.FetchAllUsers()
 
 	w.Header().Set("Content-Type", "application/json")
