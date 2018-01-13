@@ -48,7 +48,6 @@ func main() {
 			return []byte(os.Getenv("SECRET")), nil
 		},
 		SigningMethod: jwt.SigningMethodHS256,
-		Debug:         true,
 		UserProperty:  "user",
 	})
 
