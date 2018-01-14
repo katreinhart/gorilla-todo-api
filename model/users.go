@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strconv"
 	"time"
 
 	jwt "github.com/dgrijalva/jwt-go"
@@ -74,7 +75,13 @@ func LoginUser(b []byte) ([]byte, error) {
 
 	// jwt stuff
 	exp := time.Now().Add(time.Hour * 24).Unix()
-	claim := jwt.StandardClaims{Id: string(dbUser.ID), ExpiresAt: exp}
+	claim := CustomClaims{
+		dbUser.ID,
+		dbUser.Admin,
+		jwt.StandardClaims{
+			ExpiresAt: exp,
+		},
+	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claim)
 	secret := []byte(os.Getenv("SECRET"))
 
@@ -84,8 +91,6 @@ func LoginUser(b []byte) ([]byte, error) {
 		fmt.Println(err.Error())
 		return []byte("Something went wrong with JWT"), err
 	}
-
-	fmt.Println("token is", t)
 
 	var _user transformedUser
 	_user.Email = user.Email
@@ -100,18 +105,6 @@ func LoginUser(b []byte) ([]byte, error) {
 	}
 
 	return js, nil
-}
-
-// user login password helper functions
-// from https://gowebexamples.com/password-hashing/
-func hashPassword(password string) (string, error) {
-	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
-	return string(bytes), err
-}
-
-func checkPasswordHash(password, hash string) bool {
-	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
-	return err == nil
 }
 
 // FetchAllUsers asdfasdfasdf
@@ -137,4 +130,33 @@ func FetchAllUsers() ([]byte, error) {
 	{
 		return js, err
 	}
+}
+
+// FetchMyInfo finds the given user in the db and returns info about them
+func FetchMyInfo(uid float64) ([]byte, error) {
+	var user userModel
+	var _user listedUser
+	struid := strconv.FormatFloat(uid, 'f', -1, 64)
+
+	db.First(&user, "id = ?", struid)
+	if user.ID == 0 {
+		return []byte(""), errors.New("User not found")
+	}
+
+	_user = listedUser{ID: user.ID, Email: user.Email, Admin: user.Admin}
+
+	js, err := json.Marshal(_user)
+	return js, err
+}
+
+// user login password helper functions
+// from https://gowebexamples.com/password-hashing/
+func hashPassword(password string) (string, error) {
+	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
+	return string(bytes), err
+}
+
+func checkPasswordHash(password, hash string) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
+	return err == nil
 }

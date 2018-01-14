@@ -37,6 +37,7 @@ func main() {
 
 	u := r.PathPrefix("/users").Subrouter()
 	u.HandleFunc("/", controller.FetchAllUsers).Methods("GET")
+	u.HandleFunc("/me", controller.FetchMyInfo).Methods("GET")
 
 	s := r.PathPrefix("/auth").Subrouter()
 

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/jinzhu/gorm"
 	"github.com/joho/godotenv"
 )
@@ -27,6 +28,7 @@ type (
 		gorm.Model
 		Email    string `json:"email"`
 		Password string `json:"password"`
+		Admin    bool   `json:"admin"`
 	}
 
 	transformedUser struct {
@@ -41,11 +43,11 @@ type (
 		Admin bool   `json:"admin"`
 	}
 
-	// claims is for JWT authentication
-	// claims struct {
-	// 	ID  uint      `json:"id"`
-	// 	Exp time.Time `json:"exp"`
-	// }
+	CustomClaims struct {
+		UID uint `json:"uid"`
+		Rol bool `json:"rol"`
+		jwt.StandardClaims
+	}
 )
 
 func init() {
