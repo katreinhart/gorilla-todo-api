@@ -13,37 +13,43 @@ import (
 var db *gorm.DB
 
 type (
+	// TodoModel is the GORM model for todo
 	TodoModel struct {
 		gorm.Model
 		Title     string `json:"title"`
 		Completed bool   `json:"completed"`
 	}
 
+	// TransformedTodo is the version that is sent back in response
 	TransformedTodo struct {
 		ID        uint   `json:"id"`
 		Title     string `json:"title"`
 		Completed bool   `json:"completed"`
 	}
 
-	userModel struct {
+	// UserModel is the GORM model for the user database
+	UserModel struct {
 		gorm.Model
 		Email    string `json:"email"`
 		Password string `json:"password"`
 		Admin    bool   `json:"admin"`
 	}
 
-	transformedUser struct {
+	// TransformedUser is the version sent back on register/login
+	TransformedUser struct {
 		ID    uint   `json:"id"`
 		Email string `json:"email"`
 		Token string `json:"token"`
 	}
 
-	listedUser struct {
+	// ListedUser is the format sent back for GET all user queries
+	ListedUser struct {
 		ID    uint   `json:"id"`
 		Email string `json:"email"`
 		Admin bool   `json:"admin"`
 	}
 
+	// CustomClaims is used in JWT
 	CustomClaims struct {
 		UID uint `json:"uid"`
 		Rol bool `json:"rol"`
@@ -51,7 +57,20 @@ type (
 	}
 )
 
+// ErrorNotFound is used for a 404
 var ErrorNotFound = errors.New("Not found")
+
+// ErrorMalformedInput is used for a 400
+var ErrorMalformedInput = errors.New("Unable to parse input")
+
+// ErrorUserExists is used when user's email already is in database
+var ErrorUserExists = errors.New("User exists in DB")
+
+// ErrorInternalServer handles general 500 type errors
+var ErrorInternalServer = errors.New("Something went wrong")
+
+// ErrorNotAllowed is bad login data
+var ErrorNotAllowed = errors.New("Forbidden")
 
 func init() {
 	_ = godotenv.Load()
@@ -70,5 +89,5 @@ func init() {
 	}
 
 	db.AutoMigrate(&TodoModel{})
-	db.AutoMigrate(&userModel{})
+	db.AutoMigrate(&UserModel{})
 }

@@ -20,10 +20,8 @@ func FetchAll() ([]TransformedTodo, error) {
 
 // Create creates a new todo item and returns the []byte json object and an error.
 func Create(todo TodoModel) TransformedTodo {
-
 	db.Save(&todo)
 	_todo := TransformedTodo{ID: todo.ID, Title: todo.Title, Completed: todo.Completed}
-
 	return _todo
 }
 

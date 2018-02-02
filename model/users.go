@@ -3,7 +3,6 @@ package model
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"os"
 	"strconv"
 	"time"
@@ -13,104 +12,67 @@ import (
 )
 
 // CreateUser handles registration of new user
-func CreateUser(b []byte) ([]byte, error) {
+func CreateUser(u UserModel) (TransformedUser, error) {
 
-	var user, dbUser userModel
+	var dbUser UserModel
+	var _user TransformedUser
 
-	err := json.Unmarshal(b, &user)
+	db.First(&dbUser, "email = ?", u.Email)
 
-	if err != nil {
-		return []byte(""), errors.New("Unable to parse input")
-	}
-	email := user.Email
-	db.First(&dbUser, "email = ?", email)
 	if dbUser.ID != 0 {
-		return []byte(""), errors.New("User exists")
+		return TransformedUser{}, ErrorUserExists
 	}
 
-	hash, err := hashPassword(user.Password)
+	hash, err := hashPassword(u.Password)
 	if err != nil {
-		return []byte(""), errors.New("Something went wrong")
+		return TransformedUser{}, ErrorInternalServer
 	}
 
-	user.Password = hash
+	u.Password = hash
 
-	db.Save(&user)
+	db.Save(&u)
+
+	t, err := createTokenAndSign(u)
 
 	if err != nil {
-		return []byte(""), errors.New("User exists")
+		return TransformedUser{}, err
 	}
+	_user = TransformedUser{ID: u.ID, Email: u.Email, Token: t}
 
-	js, err := json.Marshal(user)
-
-	return js, nil
+	return _user, nil
 }
 
 // LoginUser function takes in request body of login post and checks it against database.
 // Successful login returns user with token; unsuccessful login returns an http status error with message.
-func LoginUser(b []byte) ([]byte, error) {
+func LoginUser(u UserModel) (TransformedUser, error) {
 
-	// usermodel is a struct of email and password values
-	var user userModel
+	var dbUser UserModel
 
-	err := json.Unmarshal(b, &user)
-
-	if err != nil {
-		return []byte(""), errors.New("unable to unmarshal input into todoModel")
-	}
-
-	userEmail := user.Email
-
-	var dbUser userModel
-
-	db.First(&dbUser, "email = ?", userEmail)
+	db.First(&dbUser, "email = ?", u.Email)
 	if dbUser.ID == 0 {
-		return []byte(""), errors.New("user with that email already exists in database")
+		return TransformedUser{}, ErrorUserExists
 	}
 
-	match := checkPasswordHash(user.Password, dbUser.Password)
+	match := checkPasswordHash(u.Password, dbUser.Password)
 	if !match {
-		return []byte(""), errors.New("passwords do not match")
+		return TransformedUser{}, ErrorNotAllowed
 	}
 
-	// jwt stuff
-	exp := time.Now().Add(time.Hour * 24).Unix()
-	claim := CustomClaims{
-		dbUser.ID,
-		dbUser.Admin,
-		jwt.StandardClaims{
-			ExpiresAt: exp,
-		},
-	}
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claim)
-	secret := []byte(os.Getenv("SECRET"))
-
-	t, err := token.SignedString(secret)
+	t, err := createTokenAndSign(dbUser)
 
 	if err != nil {
-		fmt.Println(err.Error())
-		return []byte("Something went wrong with JWT"), err
+		return TransformedUser{}, err
 	}
 
-	var _user transformedUser
-	_user.Email = user.Email
-	_user.ID = user.ID
-	_user.Token = t
+	_user := TransformedUser{Email: u.Email, ID: u.ID, Token: t}
 
-	js, err := json.Marshal(_user)
-
-	if err != nil {
-		fmt.Println(err.Error())
-		return []byte("Error parsing user into JSON"), err
-	}
-
-	return js, nil
+	return _user, nil
 }
 
 // FetchAllUsers asdfasdfasdf
 func FetchAllUsers() ([]byte, error) {
-	var users []userModel
-	var _users []listedUser
+	var users []UserModel
+	var _users []ListedUser
 
 	db.Find(&users)
 
@@ -122,7 +84,7 @@ func FetchAllUsers() ([]byte, error) {
 	}
 
 	for _, item := range users {
-		_users = append(_users, listedUser{ID: item.ID, Email: item.Email, Admin: false})
+		_users = append(_users, ListedUser{ID: item.ID, Email: item.Email, Admin: false})
 	}
 
 	js, err := json.Marshal(_users)
@@ -134,8 +96,8 @@ func FetchAllUsers() ([]byte, error) {
 
 // FetchMyInfo finds the given user in the db and returns info about them
 func FetchMyInfo(uid float64) ([]byte, error) {
-	var user userModel
-	var _user listedUser
+	var user UserModel
+	var _user ListedUser
 	struid := strconv.FormatFloat(uid, 'f', -1, 64)
 
 	db.First(&user, "id = ?", struid)
@@ -143,7 +105,7 @@ func FetchMyInfo(uid float64) ([]byte, error) {
 		return []byte(""), errors.New("User not found")
 	}
 
-	_user = listedUser{ID: user.ID, Email: user.Email, Admin: user.Admin}
+	_user = ListedUser{ID: user.ID, Email: user.Email, Admin: user.Admin}
 
 	js, err := json.Marshal(_user)
 	return js, err
@@ -159,4 +121,22 @@ func hashPassword(password string) (string, error) {
 func checkPasswordHash(password, hash string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
 	return err == nil
+}
+
+func createTokenAndSign(u UserModel) (string, error) {
+	// jwt stuff
+	exp := time.Now().Add(time.Hour * 24).Unix()
+	claim := CustomClaims{
+		u.ID,
+		u.Admin,
+		jwt.StandardClaims{
+			ExpiresAt: exp,
+		},
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claim)
+	secret := []byte(os.Getenv("SECRET"))
+
+	t, err := token.SignedString(secret)
+
+	return t, err
 }

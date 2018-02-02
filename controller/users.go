@@ -2,6 +2,7 @@ package controller
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
@@ -17,27 +18,23 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	buf.ReadFrom(r.Body)
 	b := []byte(buf.String())
 
-	js, err := model.CreateUser(b)
+	var user model.UserModel
 
-	w.Header().Set("Content-Type", "application/json")
+	err := json.Unmarshal(b, &user)
 
 	if err != nil {
-		if err.Error() == "Unable to parse input" {
-			w.WriteHeader(http.StatusBadRequest)
-			// w.Write([]byte("Please check your inputs and try again."))
-			return
-		} else if err.Error() == "User exists" {
-			w.WriteHeader(http.StatusBadRequest)
-			// w.Write([]byte("User already exists in db."))
-			return
-		}
-		w.WriteHeader(http.StatusInternalServerError)
-		// w.Write([]byte("Something went wrong."))
-		return
+		handleErrorAndRespond(nil, err, w)
 	}
 
-	w.WriteHeader(http.StatusOK)
-	w.Write(js)
+	_user, err := model.CreateUser(user)
+
+	if err != nil {
+		handleErrorAndRespond(nil, err, w)
+	}
+
+	js, err := json.Marshal(_user)
+	handleErrorAndRespond(js, err, w)
+
 }
 
 // LoginUser function handles request/response of login function
@@ -47,24 +44,15 @@ func LoginUser(w http.ResponseWriter, r *http.Request) {
 	buf.ReadFrom(r.Body)
 	b := []byte(buf.String())
 
-	js, err := model.LoginUser(b)
-	w.Header().Set("Content-Type", "application/json")
+	var u model.UserModel
+	err := json.Unmarshal(b, &u)
 
-	if err != nil {
-		if err.Error() == "Something went wrong with JWT" {
-			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte("{\"message\": \"something went wrong\"}"))
-		} else if err.Error() == "Passwords do not match" {
-			w.WriteHeader(http.StatusForbidden)
-			w.Write([]byte("{\"message\": \"Not allowed\"}"))
-		} else {
-			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte("{\"message\": \"something went wrong\"}"))
-		}
-	}
+	var _u model.TransformedUser
+	_u, err = model.LoginUser(u)
 
-	w.WriteHeader(http.StatusOK)
-	w.Write(js)
+	js, err := json.Marshal(_u)
+
+	handleErrorAndRespond(js, err, w)
 }
 
 // FetchAllUsers does what it says on the tin

@@ -15,6 +15,10 @@ func FetchAllTodos(w http.ResponseWriter, r *http.Request) {
 
 	_todos, err := model.FetchAll()
 
+	if err != nil {
+		handleErrorAndRespond(nil, err, w)
+	}
+
 	js, err := json.Marshal(_todos)
 
 	handleErrorAndRespond(js, err, w)
@@ -50,6 +54,10 @@ func FetchSingleTodo(w http.ResponseWriter, r *http.Request) {
 
 	_todo, err := model.FetchSingle(id)
 
+	if err != nil {
+		handleErrorAndRespond(nil, err, w)
+	}
+
 	js, err := json.Marshal(_todo)
 	handleErrorAndRespond(js, err, w)
 }
@@ -68,6 +76,10 @@ func UpdateTodo(w http.ResponseWriter, r *http.Request) {
 
 	var _todo model.TransformedTodo
 	_todo, err = model.Update(todo, id)
+
+	if err != nil {
+		handleErrorAndRespond(nil, err, w)
+	}
 
 	js, err := json.Marshal(_todo)
 	handleErrorAndRespond(js, err, w)
