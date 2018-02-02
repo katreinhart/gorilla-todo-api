@@ -1,6 +1,7 @@
 package model
 
 import (
+	"errors"
 	"fmt"
 	"os"
 
@@ -12,13 +13,13 @@ import (
 var db *gorm.DB
 
 type (
-	todoModel struct {
+	TodoModel struct {
 		gorm.Model
 		Title     string `json:"title"`
 		Completed bool   `json:"completed"`
 	}
 
-	transformedTodo struct {
+	TransformedTodo struct {
 		ID        uint   `json:"id"`
 		Title     string `json:"title"`
 		Completed bool   `json:"completed"`
@@ -50,6 +51,8 @@ type (
 	}
 )
 
+var ErrorNotFound = errors.New("Not found")
+
 func init() {
 	_ = godotenv.Load()
 
@@ -66,6 +69,6 @@ func init() {
 		panic("Unable to connect to DB")
 	}
 
-	db.AutoMigrate(&todoModel{})
+	db.AutoMigrate(&TodoModel{})
 	db.AutoMigrate(&userModel{})
 }

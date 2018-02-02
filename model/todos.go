@@ -1,118 +1,73 @@
 package model
 
-import (
-	"encoding/json"
-	"errors"
-)
-
 // FetchAll is the model function which interfaces with the DB and returns a []byte of the todos in json format.
-func FetchAll() ([]byte, error) {
-
-	var todos []todoModel
-	var _todos []transformedTodo
+func FetchAll() ([]TransformedTodo, error) {
+	var todos []TodoModel
+	var _todos []TransformedTodo
 
 	db.Find(&todos)
 
 	if len(todos) <= 0 {
-		err := errors.New("Not found")
-		{
-			return []byte("Todos not found"), err
-		}
+		return nil, ErrorNotFound
 	}
 
 	for _, item := range todos {
-		_todos = append(_todos, transformedTodo{ID: item.ID, Completed: item.Completed, Title: item.Title})
+		_todos = append(_todos, TransformedTodo{ID: item.ID, Completed: item.Completed, Title: item.Title})
 	}
 
-	js, err := json.Marshal(_todos)
-
-	{
-		return js, err
-	}
+	return _todos, nil
 }
 
 // Create creates a new todo item and returns the []byte json object and an error.
-func Create(b []byte) ([]byte, error) {
-
-	var todo todoModel
-
-	err := json.Unmarshal(b, &todo)
-
-	if err != nil {
-		return []byte("Something went wrong"), err
-	}
+func Create(todo TodoModel) TransformedTodo {
 
 	db.Save(&todo)
+	_todo := TransformedTodo{ID: todo.ID, Title: todo.Title, Completed: todo.Completed}
 
-	return []byte("Todo successfully created"), nil
+	return _todo
 }
 
 // FetchSingle gets a single todo based on param passed, returning []byte and error
-func FetchSingle(id string) ([]byte, error) {
+func FetchSingle(id string) (TransformedTodo, error) {
 
-	var todo todoModel
+	var todo TodoModel
 	db.First(&todo, id)
 
 	if todo.ID == 0 {
-		err := errors.New("Not found")
-		return []byte("Todo not found"), err
+		return TransformedTodo{}, ErrorNotFound
 	}
 
-	_todo := transformedTodo{ID: todo.ID, Title: todo.Title, Completed: todo.Completed}
+	_todo := TransformedTodo{ID: todo.ID, Title: todo.Title, Completed: todo.Completed}
 
-	js, err := json.Marshal(_todo)
-	if err != nil {
-		js = []byte("Unable to convert todo to JSON format")
-	}
-
-	return js, err
+	return _todo, nil
 }
 
 // Update is the model function for PUT
-func Update(b []byte, id string) ([]byte, error) {
+func Update(updatedTodo TodoModel, id string) (TransformedTodo, error) {
 
-	var todo, updatedTodo todoModel
-	db.First(&todo, id)
+	var todo TodoModel
+	db.Find(&todo, "id = ?", id)
 
 	if todo.ID == 0 {
-		err := errors.New("Not found")
-		return []byte("Todo not found"), err
-	}
-
-	err := json.Unmarshal(b, &updatedTodo)
-	if err != nil {
-		return []byte("Malformed input"), err
+		return TransformedTodo{}, ErrorNotFound
 	}
 
 	db.Model(&todo).Update("title", updatedTodo.Title)
 	db.Model(&todo).Update("completed", updatedTodo.Completed)
 
-	js, err := json.Marshal(&todo)
-	if err != nil {
-		return []byte("Unable to marshal json"), err
-	}
-
-	return js, nil
+	return TransformedTodo{ID: todo.ID, Completed: todo.Completed, Title: todo.Title}, nil
 }
 
 // Delete deletes the todo from the database
-func Delete(id string) ([]byte, error) {
+func Delete(id string) (TransformedTodo, error) {
 
-	var todo todoModel
+	var todo TodoModel
 	db.First(&todo, id)
 
 	if todo.ID == 0 {
-		// w.WriteHeader(http.StatusNotFound)
-		// w.Write([]byte("Todo not found"))
-		// return
+		return TransformedTodo{}, ErrorNotFound
 	}
 
 	db.Delete(&todo)
-
-	js, err := json.Marshal(&todo)
-	if err != nil {
-		panic("Unable to marshal todo into json")
-	}
-
-	return js, nil
+	return TransformedTodo{ID: todo.ID, Completed: todo.Completed, Title: todo.Title}, nil
 }

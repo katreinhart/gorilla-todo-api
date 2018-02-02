@@ -2,6 +2,7 @@ package controller
 
 import (
 	"bytes"
+	"encoding/json"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -10,23 +11,13 @@ import (
 
 // FetchAllTodos fetches from model and returns json
 func FetchAllTodos(w http.ResponseWriter, r *http.Request) {
+	var _todos []model.TransformedTodo
 
-	js, err := model.FetchAll()
+	_todos, err := model.FetchAll()
 
-	w.Header().Set("Content-Type", "application/json")
+	js, err := json.Marshal(_todos)
 
-	if err != nil {
-		if err.Error() == "Not found" {
-			w.WriteHeader(http.StatusNotFound)
-			w.Write(js)
-		} else {
-			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte("Something went wrong"))
-		}
-	}
-
-	w.WriteHeader(http.StatusOK)
-	w.Write(js)
+	handleErrorAndRespond(js, err, w)
 }
 
 // CreateTodo takes request body and sends it to model, sending back success message or error on response
@@ -36,23 +27,20 @@ func CreateTodo(w http.ResponseWriter, r *http.Request) {
 	buf.ReadFrom(r.Body)
 	b := []byte(buf.String())
 
-	js, err := model.Create(b)
+	var todo model.TodoModel
+	var _todo model.TransformedTodo
+
+	err := json.Unmarshal(b, &todo)
 
 	if err != nil {
-		if err.Error() == "Not found" {
-			w.WriteHeader(http.StatusNotFound)
-			w.Write(js)
-		} else if err.Error() == "Bad request" {
-			w.WriteHeader(http.StatusBadRequest)
-			w.Write([]byte("Please check your inputs and try again"))
-		} else {
-			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte("Sorry, something went wrong."))
-		}
+		handleErrorAndRespond(nil, err, w)
 	}
 
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("Todo successfully created!"))
+	_todo = model.Create(todo)
+
+	js, err := json.Marshal(_todo)
+	handleErrorAndRespond(js, err, w)
+
 }
 
 // FetchSingleTodo takes URL param and passes to model,
@@ -60,15 +48,10 @@ func FetchSingleTodo(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id := vars["id"]
 
-	js, err := model.FetchSingle(id)
+	_todo, err := model.FetchSingle(id)
 
-	if err != nil {
-		panic("Unable to convert todo to JSON format")
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	w.Write(js)
+	js, err := json.Marshal(_todo)
+	handleErrorAndRespond(js, err, w)
 }
 
 // UpdateTodo modifies the content of Todo based on url param and body content.
@@ -80,25 +63,14 @@ func UpdateTodo(w http.ResponseWriter, r *http.Request) {
 	buf.ReadFrom(r.Body)
 	b := []byte(buf.String())
 
-	js, err := model.Update(b, id)
+	var todo model.TodoModel
+	err := json.Unmarshal(b, &todo)
 
-	w.Header().Set("Content-Type", "application/json")
+	var _todo model.TransformedTodo
+	_todo, err = model.Update(todo, id)
 
-	if err != nil {
-		if err.Error() == "Not found" {
-			w.WriteHeader(http.StatusNotFound)
-			w.Write([]byte("Todo not found"))
-		} else if err.Error() == "Malformed input" {
-			w.WriteHeader(http.StatusNotAcceptable)
-			w.Write([]byte("Please check your inputs and try again."))
-		} else {
-			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte("Something went wrong."))
-		}
-	}
-
-	w.WriteHeader(http.StatusOK)
-	w.Write(js)
+	js, err := json.Marshal(_todo)
+	handleErrorAndRespond(js, err, w)
 }
 
 // DeleteTodo deletes a todo
@@ -106,20 +78,10 @@ func DeleteTodo(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id := vars["id"]
 
-	js, err := model.Delete(id)
+	var deletedTodo model.TransformedTodo
 
-	w.Header().Set("Content-Type", "application/json")
+	deletedTodo, err := model.Delete(id)
 
-	if err != nil {
-		if err.Error() == "Not found" {
-			w.WriteHeader(http.StatusNotFound)
-			w.Write([]byte("Todo not found"))
-		} else if err.Error() == "Unable to marshal todo into json" {
-			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte("Something went wrong."))
-		}
-	}
-
-	w.WriteHeader(http.StatusOK)
-	w.Write(js)
+	js, err := json.Marshal(deletedTodo)
+	handleErrorAndRespond(js, err, w)
 }
