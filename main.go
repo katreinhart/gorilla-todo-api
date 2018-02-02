@@ -12,6 +12,7 @@ import (
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 	"github.com/katreinhart/gorilla-api/controller"
 	"github.com/katreinhart/gorilla-api/routing"
+	"github.com/rs/cors"
 )
 
 func main() {
@@ -65,6 +66,16 @@ func main() {
 	))
 
 	n := negroni.Classic()
+
+	// CORS middleware setup
+	c := cors.New(cors.Options{
+		AllowedOrigins:   []string{"*"},
+		AllowedHeaders:   []string{"Accept-Encoding", "Accept-Language", "Authorization"},
+		AllowedMethods:   []string{"GET", "POST", "PUT", "OPTIONS", "DELETE"},
+		AllowCredentials: true,
+	})
+	n.Use(c)
+
 	n.UseHandler(muxRouter)
 
 	http.ListenAndServe(":"+port, handlers.RecoveryHandler()(n))

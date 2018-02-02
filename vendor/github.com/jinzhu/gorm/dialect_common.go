@@ -144,9 +144,9 @@ func (commonDialect) LastInsertIDReturningSuffix(tableName, columnName string) s
 	return ""
 }
 
-func (DefaultForeignKeyNamer) BuildForeignKeyName(tableName, field, dest string) string {
-	keyName := fmt.Sprintf("%s_%s_%s_foreign", tableName, field, dest)
-	keyName = regexp.MustCompile("(_*[^a-zA-Z]+_*|_+)").ReplaceAllString(keyName, "_")
+func (DefaultForeignKeyNamer) BuildKeyName(kind, tableName string, fields ...string) string {
+	keyName := fmt.Sprintf("%s_%s_%s", kind, tableName, strings.Join(fields, "_"))
+	keyName = regexp.MustCompile("[^a-zA-Z0-9]+").ReplaceAllString(keyName, "_")
 	return keyName
 }
 
