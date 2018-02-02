@@ -13,15 +13,11 @@ func handleErrorAndRespond(js []byte, err error, w http.ResponseWriter) {
 	if err != nil {
 		if err == model.ErrorNotFound {
 			w.WriteHeader(http.StatusNotFound)
-		} else if err.Error() == "Error saving to database" {
-			w.WriteHeader(http.StatusInternalServerError)
-		} else if err.Error() == "Something went wrong" {
-			w.WriteHeader(http.StatusInternalServerError)
-		} else if err.Error() == "Update error" {
-			w.WriteHeader(http.StatusInternalServerError)
-		} else if err.Error() == "User already exists" {
-			w.WriteHeader(http.StatusFound)
-		} else if err.Error() == "Unauthorized" {
+		} else if err == model.ErrorMalformedInput {
+			w.WriteHeader(http.StatusBadRequest)
+		} else if err == model.ErrorUserExists {
+			w.WriteHeader(http.StatusUnprocessableEntity)
+		} else if err == model.ErrorNotAllowed {
 			w.WriteHeader(http.StatusUnauthorized)
 		} else {
 			w.WriteHeader(http.StatusInternalServerError)

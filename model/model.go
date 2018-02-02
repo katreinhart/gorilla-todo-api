@@ -2,7 +2,6 @@ package model
 
 import (
 	"errors"
-	"fmt"
 	"os"
 
 	jwt "github.com/dgrijalva/jwt-go"
@@ -81,7 +80,7 @@ func init() {
 	password := os.Getenv("PASSWORD")
 
 	dbString := "host=" + hostname + " user=" + username + " dbname=" + dbname + " sslmode=disable password=" + password
-	fmt.Println(dbString)
+
 	var err error
 	db, err = gorm.Open("postgres", dbString)
 	if err != nil {
