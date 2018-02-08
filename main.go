@@ -10,6 +10,7 @@ import (
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
+	// jwtmiddleware "github.com/katreinhart/go-jwt-middleware"
 	"github.com/katreinhart/gorilla-api/controller"
 	"github.com/katreinhart/gorilla-api/routing"
 	"github.com/rs/cors"
@@ -70,7 +71,7 @@ func main() {
 	// CORS middleware setup
 	c := cors.New(cors.Options{
 		AllowedOrigins:   []string{"*"},
-		AllowedHeaders:   []string{"Accept-Encoding", "Accept-Language", "Authorization"},
+		AllowedHeaders:   []string{"Accept-Encoding", "Accept-Language", "Authorization", "Content-Type"},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "OPTIONS", "DELETE"},
 		AllowCredentials: true,
 	})
