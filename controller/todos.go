@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
-	"github.com/katreinhart/gorilla-api/model"
+	"github.com/katreinhart/gorilla-todo-api/model"
 )
 
 // FetchAllTodos fetches from model and returns json

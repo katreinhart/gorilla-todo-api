@@ -3,7 +3,7 @@ package controller
 import (
 	"net/http"
 
-	"github.com/katreinhart/gorilla-api/model"
+	"github.com/katreinhart/gorilla-todo-api/model"
 )
 
 func handleErrorAndRespond(js []byte, err error, w http.ResponseWriter) {

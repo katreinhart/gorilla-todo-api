@@ -11,8 +11,8 @@ import (
 	"github.com/gorilla/mux"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 	// jwtmiddleware "github.com/katreinhart/go-jwt-middleware"
-	"github.com/katreinhart/gorilla-api/controller"
-	"github.com/katreinhart/gorilla-api/routing"
+	"github.com/katreinhart/gorilla-todo-api/controller"
+	"github.com/katreinhart/gorilla-todo-api/routing"
 	"github.com/rs/cors"
 )
 

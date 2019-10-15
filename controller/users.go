@@ -8,7 +8,7 @@ import (
 	"os"
 
 	jwt "github.com/dgrijalva/jwt-go"
-	"github.com/katreinhart/gorilla-api/model"
+	"github.com/katreinhart/gorilla-todo-api/model"
 )
 
 // CreateUser handles registration of new user
